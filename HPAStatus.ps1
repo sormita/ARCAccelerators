@@ -1,8 +1,4 @@
-﻿param(
-[string]$ClusterName
-)
-
-Write-Output "Log into Azure use cluster admin service principal"
+﻿Write-Output "Log into Azure use cluster admin service principal"
 $spApplicationId="21c20099-13b5-456e-b0c1-16aa9aaf42d6"
 $spSecret="Y8CCiaRqJ-mrF173HSk7.FUKdl3xlsg0~."
 $userPassword = ConvertTo-SecureString -String $spSecret -AsPlainText -Force
@@ -27,51 +23,7 @@ Write-Output "Service Principal Name or ID: $USER_NAME"
 Write-Output "Get credentials and set up for kubectl to use"
 az aks get-credentials -g "Azure_Arc_Training" -n "HealthCareAKS" 
 
-Write-Output "Get deployed services list"
-$jsonService=kubectl get services -o json 
-$serviceObj=$jsonService| ConvertFrom-Json
-
- $serviceNames=$serviceObj.items | select -ExpandProperty "metadata" | select -ExpandProperty "name"
- Write-Output $serviceNames
-
-
 Write-Output "Get deployed hpa"
 $jsonHpa=kubectl get hpa | ConvertTo-Json 
 $objHpa= $jsonHpa | ConvertFrom-Json
-Write-Output $jsonHpa
-#Write-Output $objHpa
-
-$allHPAPresent=0
-
-
-Foreach($serviceobj in $serviceNames)
-{
- if($serviceObj -ne "kubernetes")
- {  
-  $depService="Deployment/"+ $serviceObj
-  if($jsonHpa.Contains($depService))
-  {
-   #Write-Output $serviceObj " have a defined HPA."
-  }
-  else
-  {
-   Write-Output $serviceObj " does not have a defined HPA."   
-   $allHPAPresent=1
-  }
- }
-}
-
-if($allHPAPresent -eq 1)
-{
- Write-Output "Program is aborting as HPAs are missing"
-}
-
-
-
-
-
-
-
-
-
-
+Write-Output $jsonHpa | Out-File "C:\JSONOutput\HPAOutput.txt"
